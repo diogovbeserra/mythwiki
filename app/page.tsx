@@ -143,7 +143,7 @@ export default function HomePage() {
           <h3 className="text-3xl font-bold text-slate-900 mb-6 text-center">
             Game Tools & Utilities
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {/* Farm Optimizer */}
             <Link href="/tools/optimizer" className="group">
               <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl border-2 border-orange-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
@@ -193,6 +193,44 @@ export default function HomePage() {
                   </h4>
                   <p className="text-sm text-slate-600 mt-2">
                     Track drops and profits
+                  </p>
+                </div>
+              </div>
+            </Link>
+
+            {/* MVP Timer */}
+            <Link href="/tools/mvp-timer" className="group">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border-2 border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                <div className="p-6">
+                  <div className="w-14 h-14 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-xl font-bold text-slate-900 mb-2">
+                    MVP Timer
+                  </h4>
+                  <p className="text-sm text-slate-600 mt-2">
+                    Track MVP farm sessions
+                  </p>
+                </div>
+              </div>
+            </Link>
+
+            {/* Refinement Calculator */}
+            <Link href="/tools/refinement" className="group">
+              <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl border-2 border-pink-200 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
+                <div className="p-6">
+                  <div className="w-14 h-14 bg-pink-500/20 rounded-xl flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-xl font-bold text-slate-900 mb-2">
+                    Refinement Calculator
+                  </h4>
+                  <p className="text-sm text-slate-600 mt-2">
+                    Calculate refine costs
                   </p>
                 </div>
               </div>
