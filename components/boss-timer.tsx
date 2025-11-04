@@ -300,8 +300,8 @@ export function BossTimer() {
                   onClick={() => setFilterType('all')}
                   className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-colors ${
                     filterType === 'all'
-                      ? 'bg-purple-600 text-slate-900'
-                      : 'bg-gray-800/50 text-slate-600 hover:bg-gray-700/50'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                   }`}
                 >
                   All ({bosses.length})
@@ -310,8 +310,8 @@ export function BossTimer() {
                   onClick={() => setFilterType('mvp')}
                   className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-colors ${
                     filterType === 'mvp'
-                      ? 'bg-red-600 text-slate-900'
-                      : 'bg-gray-800/50 text-slate-600 hover:bg-gray-700/50'
+                      ? 'bg-red-600 text-white'
+                      : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                   }`}
                 >
                   👑 MVPs ({mvps.length})
@@ -320,8 +320,8 @@ export function BossTimer() {
                   onClick={() => setFilterType('mini')}
                   className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-colors ${
                     filterType === 'mini'
-                      ? 'bg-yellow-600 text-slate-900'
-                      : 'bg-gray-800/50 text-slate-600 hover:bg-gray-700/50'
+                      ? 'bg-yellow-600 text-white'
+                      : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                   }`}
                 >
                   ⭐ Mini ({minis.filter(m => !m.isMVP).length})
@@ -516,7 +516,7 @@ export function BossTimer() {
                 />
               </div>
 
-              <div className="text-sm text-slate-600 bg-gray-900/30 rounded-lg p-3">
+              <div className="text-sm text-slate-700 bg-slate-100 rounded-lg p-3 border border-slate-300">
                 <p>📍 {selectedBoss.mapLocation || 'Unknown location'}</p>
                 <p>⏱️ Respawn: {selectedBoss.respawnTime} minutes</p>
               </div>

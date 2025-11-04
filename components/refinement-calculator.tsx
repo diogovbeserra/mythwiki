@@ -299,22 +299,22 @@ export function RefinementCalculator() {
 
           {/* Interactive Simulator */}
           <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/40 backdrop-blur-sm border border-orange-500/30 rounded-xl p-4 flex flex-col min-h-0">
-            <h2 className="text-lg font-bold mb-3">🎮 Interactive Simulator</h2>
+            <h2 className="text-lg font-bold mb-3 text-white">🎮 Interactive Simulator</h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
               {/* Left Column - Current State & Controls */}
               <div className="flex flex-col space-y-2 min-h-0">
                 {/* Current State */}
-                <div className="bg-black/30 rounded-lg p-3 space-y-2">
+                <div className="bg-slate-900/60 rounded-lg p-3 space-y-2 border border-slate-700/50">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <div className="text-xs text-slate-600 mb-1">Current Refine</div>
+                      <div className="text-xs text-slate-300 mb-1 font-semibold">Current Refine</div>
                       <div className={`text-3xl font-bold ${getRefineColor(simRefine)}`}>
                         {formatRefineLevel(simRefine)}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs text-slate-600 mb-1">Durability</div>
+                      <div className="text-xs text-slate-300 mb-1 font-semibold">Durability</div>
                       <div className={`text-3xl font-bold ${simDurability === 0 ? 'text-red-400' : 'text-blue-400'}`}>
                         {simDurability}
                       </div>
@@ -322,8 +322,8 @@ export function RefinementCalculator() {
                   </div>
 
                   {simRefine < 12 && !simDestroyed && (
-                    <div className="pt-2 border-t border-slate-300">
-                      <div className="text-xs text-slate-600 mb-1">
+                    <div className="pt-2 border-t border-slate-600">
+                      <div className="text-xs text-slate-300 mb-1 font-semibold">
                         Chance {formatRefineLevel(simRefine)} → {formatRefineLevel((simRefine + 1) as RefineLevel)}
                       </div>
                       <div className="text-xl font-bold text-yellow-400">
@@ -333,19 +333,19 @@ export function RefinementCalculator() {
                   )}
 
                   {simDurability === 0 && !simDestroyed && simRefine < targetRefine && (
-                    <div className="px-2 py-1 bg-yellow-600/20 border border-yellow-500/50 rounded text-yellow-400 text-center font-bold text-xs">
+                    <div className="px-2 py-1 bg-yellow-600/30 border border-yellow-400/60 rounded text-yellow-200 text-center font-bold text-xs">
                       ⚠️ DANGER: Next failure = Item breaks!
                     </div>
                   )}
 
                   {simDestroyed && (
-                    <div className="px-2 py-1 bg-red-600/20 border border-red-500/50 rounded text-red-400 text-center font-bold text-xs">
+                    <div className="px-2 py-1 bg-red-600/30 border border-red-400/60 rounded text-red-200 text-center font-bold text-xs">
                       💥 ITEM DESTROYED!
                     </div>
                   )}
 
                   {simRefine >= targetRefine && !simDestroyed && (
-                    <div className="px-2 py-1 bg-green-600/20 border border-green-500/50 rounded text-green-400 text-center font-bold text-xs">
+                    <div className="px-2 py-1 bg-green-600/30 border border-green-400/60 rounded text-green-200 text-center font-bold text-xs">
                       ✓ TARGET REACHED!
                     </div>
                   )}
@@ -356,13 +356,13 @@ export function RefinementCalculator() {
                   <button
                     onClick={handleSimulateAttempt}
                     disabled={simDestroyed || simRefine >= targetRefine}
-                    className="w-full px-3 py-2 text-sm bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:text-slate-500 disabled:cursor-not-allowed rounded-lg font-bold transition-colors"
+                    className="w-full px-3 py-2 text-sm text-white bg-orange-600 hover:bg-orange-700 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed rounded-lg font-bold transition-colors"
                   >
                     🎲 Try Refining
                   </button>
                   <button
                     onClick={handleResetSimulator}
-                    className="w-full px-3 py-2 text-sm bg-slate-200 hover:bg-slate-300 rounded-lg font-bold transition-colors"
+                    className="w-full px-3 py-2 text-sm text-slate-900 bg-slate-200 hover:bg-slate-300 rounded-lg font-bold transition-colors"
                   >
                     ↻ Reset
                   </button>
@@ -370,27 +370,27 @@ export function RefinementCalculator() {
               </div>
 
               {/* Right Column - History */}
-              <div className="bg-black/30 rounded-lg p-3 flex flex-col min-h-0">
-                <div className="text-xs font-bold text-slate-700 mb-2">📜 Attempt History</div>
+              <div className="bg-slate-900/60 rounded-lg p-3 flex flex-col min-h-0 border border-slate-700/50">
+                <div className="text-xs font-bold text-slate-200 mb-2">📜 Attempt History</div>
                 <div className="space-y-1 overflow-y-auto pr-2 flex-1">
                   {simHistory.length === 0 ? (
-                    <div className="text-center text-slate-500 text-xs py-4">
+                    <div className="text-center text-slate-400 text-xs py-4">
                       No attempts yet
                     </div>
                   ) : (
                     simHistory.map((attempt, idx) => (
                       <div
                         key={idx}
-                        className={`px-2 py-1 rounded text-xs ${
+                        className={`px-2 py-1 rounded text-xs font-medium ${
                           attempt.itemDestroyed
-                            ? 'bg-red-900/30 border border-red-500/30 text-red-400'
+                            ? 'bg-red-900/50 border border-red-400/60 text-red-200'
                             : attempt.success
-                            ? 'bg-green-900/30 border border-green-500/30 text-green-400'
-                            : 'bg-white/90 border border-slate-300/50 text-slate-600'
+                            ? 'bg-green-900/50 border border-green-400/60 text-green-200'
+                            : 'bg-slate-800/70 border border-slate-600/50 text-slate-200'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-mono text-xs text-slate-500">#{simHistory.length - idx}</span>
+                          <span className="font-mono text-xs text-slate-400">#{simHistory.length - idx}</span>
                           <span>
                             {attempt.itemDestroyed ? (
                               <span>💥 Item destroyed</span>
