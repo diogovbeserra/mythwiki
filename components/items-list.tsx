@@ -91,7 +91,15 @@ async function getItems({ page = 1, search = '', type = '', subtype = '', sort =
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { ename: { contains: search, mode: 'insensitive' } }
+        { ename: { contains: search, mode: 'insensitive' } },
+        // Search in description content
+        {
+          description: {
+            identifiedDescription: {
+              hasSome: [search]
+            }
+          }
+        }
       ];
     }
 
@@ -268,8 +276,8 @@ export async function ItemsList({ searchParams }: ItemsListProps) {
                       {/* Description Preview */}
                       {fullText && (
                         <div className="mb-3 p-3 bg-slate-50 rounded-md border border-slate-200">
-                          <p className="text-sm text-slate-700 whitespace-pre-wrap">
-                            {fullText}
+                          <p className="text-sm text-slate-700 line-clamp-3">
+                            {fullText.length > 200 ? fullText.substring(0, 200) + '...' : fullText}
                           </p>
                         </div>
                       )}

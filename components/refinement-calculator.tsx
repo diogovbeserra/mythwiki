@@ -105,20 +105,20 @@ export function RefinementCalculator() {
   };
 
   return (
-    <div className="min-h-screen max-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white overflow-hidden">
+    <div className="min-h-screen max-h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden">
       <div className="max-w-7xl mx-auto h-screen flex flex-col p-3">
         {/* Input Section */}
-        <div className="bg-gradient-to-br from-gray-800/60 to-gray-700/60 backdrop-blur-sm border border-purple-500/30 rounded-xl p-4 mb-3">
+        <div className="bg-gradient-to-br from-white/90 to-white backdrop-blur-sm border border-slate-200 rounded-xl p-4 mb-3">
           <div className="flex items-center justify-between mb-1">
             <h2 className="text-2xl font-bold">🎲 Refinement Probability</h2>
             <Button asChild variant="outline" size="sm">
-              <Link href="/tools/refinement">
+              <Link href="/">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
               </Link>
             </Button>
           </div>
-          <p className="text-gray-400 text-sm mb-3">
+          <p className="text-slate-600 text-sm mb-3">
             Calculate real chances of refining your equipment considering durability and probabilities
           </p>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -130,8 +130,8 @@ export function RefinementCalculator() {
                   onClick={() => setItemType('weapon')}
                   className={`flex-1 px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
                     itemType === 'weapon'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
+                      ? 'bg-blue-600 text-slate-900'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
                   ⚔️ Weapon
@@ -140,8 +140,8 @@ export function RefinementCalculator() {
                   onClick={() => setItemType('armor')}
                   className={`flex-1 px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
                     itemType === 'armor'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
+                      ? 'bg-blue-600 text-slate-900'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
                   🛡️ Armor
@@ -157,7 +157,7 @@ export function RefinementCalculator() {
                 min="0"
                 value={currentDurability}
                 onChange={(e) => setCurrentDurability(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-full px-3 py-2 text-sm bg-gray-900/50 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
 
@@ -167,7 +167,7 @@ export function RefinementCalculator() {
               <select
                 value={currentRefine}
                 onChange={(e) => setCurrentRefine(parseInt(e.target.value) as RefineLevel)}
-                className="w-full px-3 py-2 text-sm bg-gray-900/50 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
               >
                 {getRefineOptions()
                   .filter(level => level < 12)
@@ -185,7 +185,7 @@ export function RefinementCalculator() {
               <select
                 value={targetRefine}
                 onChange={(e) => setTargetRefine(parseInt(e.target.value) as RefineLevel)}
-                className="w-full px-3 py-2 text-sm bg-gray-900/50 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
               >
                 {validTargets.map(level => (
                   <option key={level} value={level}>
@@ -202,13 +202,13 @@ export function RefinementCalculator() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
             {/* Success Rate */}
             <div className="bg-gradient-to-br from-green-900/40 to-green-800/40 border border-green-500/30 rounded-lg p-3">
-              <div className="text-xs text-gray-400 mb-1">Success Rate</div>
+              <div className="text-xs text-slate-600 mb-1">Success Rate</div>
               <div className="text-2xl font-bold text-green-400">
                 {(targetRefine === currentRefine + 1 && currentDurability === 0)
                   ? (stepProbabilities[0]?.successRate * 100).toFixed(2)
                   : (monteCarloResults.successRate * 100).toFixed(2)}%
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-slate-500 mt-1">
                 {(targetRefine === currentRefine + 1 && currentDurability === 0)
                   ? 'Exact value (dur=0)'
                   : `${monteCarloResults.successCount.toLocaleString()} / ${monteCarloResults.totalSimulations.toLocaleString()} successes`}
@@ -217,24 +217,24 @@ export function RefinementCalculator() {
 
             {/* Average Attempts */}
             <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/40 border border-blue-500/30 rounded-lg p-3">
-              <div className="text-xs text-gray-400 mb-1">Average Attempts</div>
+              <div className="text-xs text-slate-600 mb-1">Average Attempts</div>
               <div className="text-2xl font-bold text-blue-400">
                 {monteCarloResults.averageAttemptsOnSuccess > 0
                   ? monteCarloResults.averageAttemptsOnSuccess.toFixed(1)
                   : '∞'}
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-slate-500 mt-1">
                 {monteCarloResults.successCount > 0 ? 'Until success' : 'No success'}
               </div>
             </div>
 
             {/* Failure Rate */}
             <div className="bg-gradient-to-br from-red-900/40 to-red-800/40 border border-red-500/30 rounded-lg p-3">
-              <div className="text-xs text-gray-400 mb-1">Failure Rate</div>
+              <div className="text-xs text-slate-600 mb-1">Failure Rate</div>
               <div className="text-2xl font-bold text-red-400">
                 {((1 - monteCarloResults.successRate) * 100).toFixed(2)}%
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-slate-500 mt-1">
                 {monteCarloResults.failureCount.toLocaleString()} failures
               </div>
             </div>
@@ -250,19 +250,19 @@ export function RefinementCalculator() {
 
         {isCalculating && (
           <div className="text-center py-4">
-            <div className="animate-spin inline-block w-6 h-6 border-4 border-purple-500 border-t-transparent rounded-full mb-2"></div>
-            <p className="text-gray-400 text-sm">Calculating...</p>
+            <div className="animate-spin inline-block w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full mb-2"></div>
+            <p className="text-slate-600 text-sm">Calculating...</p>
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
           {/* Probability Table */}
-          <div className="bg-gradient-to-br from-gray-800/60 to-gray-700/60 backdrop-blur-sm border border-purple-500/30 rounded-xl p-4 flex flex-col min-h-0">
+          <div className="bg-gradient-to-br from-white/90 to-white backdrop-blur-sm border border-slate-200 rounded-xl p-4 flex flex-col min-h-0">
             <h2 className="text-lg font-bold mb-3">📊 Probability Table</h2>
             <div className="overflow-x-auto overflow-y-auto flex-1">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-gray-700">
+                  <tr className="border-b border-slate-300">
                     <th className="text-left py-1 px-2">Level</th>
                     <th className="text-right py-1 px-2">Success</th>
                     <th className="text-right py-1 px-2">Failure</th>
@@ -271,7 +271,7 @@ export function RefinementCalculator() {
                 </thead>
                 <tbody>
                   {stepProbabilities.map((step, idx) => (
-                    <tr key={idx} className="border-b border-gray-800/50">
+                    <tr key={idx} className="border-b border-slate-200">
                       <td className="py-1 px-2">
                         <span className={getRefineColor(step.from)}>{formatRefineLevel(step.from)}</span>
                         {' → '}
@@ -308,13 +308,13 @@ export function RefinementCalculator() {
                 <div className="bg-black/30 rounded-lg p-3 space-y-2">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <div className="text-xs text-gray-400 mb-1">Current Refine</div>
+                      <div className="text-xs text-slate-600 mb-1">Current Refine</div>
                       <div className={`text-3xl font-bold ${getRefineColor(simRefine)}`}>
                         {formatRefineLevel(simRefine)}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs text-gray-400 mb-1">Durability</div>
+                      <div className="text-xs text-slate-600 mb-1">Durability</div>
                       <div className={`text-3xl font-bold ${simDurability === 0 ? 'text-red-400' : 'text-blue-400'}`}>
                         {simDurability}
                       </div>
@@ -322,8 +322,8 @@ export function RefinementCalculator() {
                   </div>
 
                   {simRefine < 12 && !simDestroyed && (
-                    <div className="pt-2 border-t border-gray-700">
-                      <div className="text-xs text-gray-400 mb-1">
+                    <div className="pt-2 border-t border-slate-300">
+                      <div className="text-xs text-slate-600 mb-1">
                         Chance {formatRefineLevel(simRefine)} → {formatRefineLevel((simRefine + 1) as RefineLevel)}
                       </div>
                       <div className="text-xl font-bold text-yellow-400">
@@ -356,13 +356,13 @@ export function RefinementCalculator() {
                   <button
                     onClick={handleSimulateAttempt}
                     disabled={simDestroyed || simRefine >= targetRefine}
-                    className="w-full px-3 py-2 text-sm bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed rounded-lg font-bold transition-colors"
+                    className="w-full px-3 py-2 text-sm bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:text-slate-500 disabled:cursor-not-allowed rounded-lg font-bold transition-colors"
                   >
                     🎲 Try Refining
                   </button>
                   <button
                     onClick={handleResetSimulator}
-                    className="w-full px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg font-bold transition-colors"
+                    className="w-full px-3 py-2 text-sm bg-slate-200 hover:bg-slate-300 rounded-lg font-bold transition-colors"
                   >
                     ↻ Reset
                   </button>
@@ -371,10 +371,10 @@ export function RefinementCalculator() {
 
               {/* Right Column - History */}
               <div className="bg-black/30 rounded-lg p-3 flex flex-col min-h-0">
-                <div className="text-xs font-bold text-gray-300 mb-2">📜 Attempt History</div>
+                <div className="text-xs font-bold text-slate-700 mb-2">📜 Attempt History</div>
                 <div className="space-y-1 overflow-y-auto pr-2 flex-1">
                   {simHistory.length === 0 ? (
-                    <div className="text-center text-gray-500 text-xs py-4">
+                    <div className="text-center text-slate-500 text-xs py-4">
                       No attempts yet
                     </div>
                   ) : (
@@ -386,11 +386,11 @@ export function RefinementCalculator() {
                             ? 'bg-red-900/30 border border-red-500/30 text-red-400'
                             : attempt.success
                             ? 'bg-green-900/30 border border-green-500/30 text-green-400'
-                            : 'bg-gray-800/50 border border-gray-700/50 text-gray-400'
+                            : 'bg-white/90 border border-slate-300/50 text-slate-600'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-mono text-xs text-gray-500">#{simHistory.length - idx}</span>
+                          <span className="font-mono text-xs text-slate-500">#{simHistory.length - idx}</span>
                           <span>
                             {attempt.itemDestroyed ? (
                               <span>💥 Item destroyed</span>

@@ -15,19 +15,19 @@ function formatDescriptionLine(line: string): { text: string; className: string 
   formatted = formatted.replace(/<ITEMVIEW>([^<]+)<INFO>([^,]+),ITEM,(\d+)[^>]*<\/INFO><\/ITEMVIEW>/g, '$2');
   
   // Remove TP tags but keep content
-  formatted = formatted.replace(/<TP>([^<]+)<\/TP>/g, '$1');
+  formatted = formatted.replace(/<TP>([^<]+)<\/TP>/g, '<span class="font-semibold">$1</span>');
   
   // Determine styling based on original content
   let className = 'text-slate-700';
   
   // Separator lines
   if (line.includes('__________________')) {
-    return { text: '', className: 'border-t border-slate-200 my-2' };
+    return { text: '', className: 'border-t border-slate-300 my-3' };
   }
   
   // Refine levels and special conditions (blue)
-  if (line.includes('Refine +') || line.includes('Refine Level +')) {
-    className = 'text-blue-600 font-semibold';
+  if (line.includes('Refine +') || line.includes('Refine Level +') || line.includes('refine')) {
+    className = 'text-blue-600 font-semibold text-base';
   }
   
   // Set bonuses (purple)
@@ -36,19 +36,30 @@ function formatDescriptionLine(line: string): { text: string; className: string 
   }
   
   // Special effect names in brackets (teal)
-  if (line.match(/^\^009984/) || (line.startsWith('[') && line.endsWith(']'))) {
-    className = 'text-teal-600 font-semibold';
+  if (line.match(/^\^009984/) || (line.startsWith('[') && line.endsWith(']') && !line.includes('+'))) {
+    className = 'text-teal-600 font-semibold text-base';
   }
   
-  // Type/requirement labels (indigo)
+  // Type/requirement labels (indigo) - Make these stand out more
   if (line.includes('Type:') || line.includes('Physical Attack:') || line.includes('Weight:') || 
-      line.includes('Weapon Level:') || line.includes('Requirement:') || line.includes('Socket at:')) {
-    className = 'text-indigo-600 font-medium';
+      line.includes('Weapon Level:') || line.includes('Requirement:') || line.includes('Socket at:') ||
+      line.includes('Defense:') || line.includes('Magic Attack:')) {
+    className = 'text-indigo-700 font-bold text-base bg-indigo-50 px-2 py-1 rounded inline-block';
+  }
+  
+  // Base Level and class requirements
+  if (line.includes('Base Level') || line.includes('classes') || line.includes('Class')) {
+    className = 'text-slate-600 font-medium ml-4';
   }
   
   // Skill names and effects (green)
-  if (formatted.match(/\b(Level \d+|auto-cast|Increases damage|Decreases|damage)\b/i)) {
-    className = 'text-emerald-700';
+  if (formatted.match(/\b(Level \d+|auto-cast|Increases damage|Decreases|Adds a|chance to)\b/i)) {
+    className = 'text-emerald-700 font-medium';
+  }
+  
+  // Percentage values and stat changes
+  if (formatted.match(/[+-]\d+%|\+\d+\s+(ATK|DEF|MATK|Flee|Perfect Flee|HP|SP)/i)) {
+    className = 'text-orange-600 font-semibold';
   }
   
   return { text: formatted.trim(), className };
@@ -339,9 +350,11 @@ export function ItemDetail({ item }: ItemDetailProps) {
                 }
                 
                 return (
-                  <p key={index} className={`text-sm ${formatted.className} leading-relaxed`}>
-                    {formatted.text}
-                  </p>
+                  <p 
+                    key={index} 
+                    className={`text-sm ${formatted.className} leading-relaxed`}
+                    dangerouslySetInnerHTML={{ __html: formatted.text }}
+                  />
                 );
               })}
             </div>

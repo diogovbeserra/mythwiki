@@ -268,21 +268,21 @@ export function BossTimer() {
   const sortedTimers = getSortedTimers();
 
   return (
-    <div className="h-screen overflow-hidden bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
+    <div className="h-screen overflow-hidden bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="max-w-[1800px] h-full mx-auto px-4 py-4 flex flex-col">
         {/* Header */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <Button asChild variant="outline" size="sm">
-              <Link href="/tools/mvp-timer">
+              <Link href="/">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
               </Link>
             </Button>
           </div>
 
-          <h1 className="text-2xl font-bold mb-1">⏱️ Boss Time Tracker</h1>
-          <p className="text-sm text-gray-400">
+          <h1 className="text-2xl font-bold mb-1 text-slate-900">⏱️ Boss Time Tracker</h1>
+          <p className="text-sm text-slate-600">
             Local Time: {formatTimeWithZone(currentTime, false, userTimezoneOffset)} | Server: {formatTimeWithZone(currentTime, true, userTimezoneOffset)}
           </p>
         </div>
@@ -291,8 +291,8 @@ export function BossTimer() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 flex-1 overflow-hidden">
           {/* LEFT COLUMN - Boss List (3/4 width) */}
           <div className="lg:col-span-3 flex flex-col overflow-hidden">
-            <div className="bg-gradient-to-br from-gray-900/60 to-gray-800/60 backdrop-blur-sm border border-gray-700/50 rounded-xl p-3 shadow-2xl flex flex-col h-full overflow-hidden">
-              <h2 className="text-lg font-bold mb-3">📋 Boss List</h2>
+            <div className="bg-white/90 backdrop-blur-sm border border-slate-200 rounded-xl p-3 shadow-lg flex flex-col h-full overflow-hidden">
+              <h2 className="text-lg font-bold mb-3 text-slate-900">📋 Boss List</h2>
 
               {/* Filter Buttons */}
               <div className="mb-3 flex flex-wrap gap-2">
@@ -300,8 +300,8 @@ export function BossTimer() {
                   onClick={() => setFilterType('all')}
                   className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-colors ${
                     filterType === 'all'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+                      ? 'bg-purple-600 text-slate-900'
+                      : 'bg-gray-800/50 text-slate-600 hover:bg-gray-700/50'
                   }`}
                 >
                   All ({bosses.length})
@@ -310,8 +310,8 @@ export function BossTimer() {
                   onClick={() => setFilterType('mvp')}
                   className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-colors ${
                     filterType === 'mvp'
-                      ? 'bg-red-600 text-white'
-                      : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+                      ? 'bg-red-600 text-slate-900'
+                      : 'bg-gray-800/50 text-slate-600 hover:bg-gray-700/50'
                   }`}
                 >
                   👑 MVPs ({mvps.length})
@@ -320,8 +320,8 @@ export function BossTimer() {
                   onClick={() => setFilterType('mini')}
                   className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-colors ${
                     filterType === 'mini'
-                      ? 'bg-yellow-600 text-white'
-                      : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+                      ? 'bg-yellow-600 text-slate-900'
+                      : 'bg-gray-800/50 text-slate-600 hover:bg-gray-700/50'
                   }`}
                 >
                   ⭐ Mini ({minis.filter(m => !m.isMVP).length})
@@ -339,8 +339,8 @@ export function BossTimer() {
                       key={boss.id}
                       className={`bg-gradient-to-br ${
                         hasTimer
-                          ? 'from-gray-700/30 to-gray-800/30 border-gray-600/40'
-                          : 'from-gray-800/40 to-gray-900/40 border-gray-700/30'
+                          ? 'from-slate-100 to-slate-200 border-slate-300'
+                          : 'from-slate-50 to-slate-100 border-slate-200'
                       } backdrop-blur-sm border rounded-lg p-2 transition-all hover:scale-[1.02]`}
                     >
                       {/* Boss Header */}
@@ -352,7 +352,7 @@ export function BossTimer() {
                       </div>
 
                       {/* Boss Details */}
-                      <div className="space-y-0.5 mb-2 text-[10px] text-gray-400">
+                      <div className="space-y-0.5 mb-2 text-[10px] text-slate-600">
                         <p className="truncate">📍 {boss.mapLocation || 'Unknown'}</p>
                         <p>⏱️ 90-120m</p>
                       </div>
@@ -364,7 +364,7 @@ export function BossTimer() {
                         className={`w-full px-2 py-1.5 rounded text-[10px] font-bold transition-colors ${
                           hasTimer
                             ? 'bg-gray-700/50 text-gray-500 cursor-not-allowed'
-                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                            : 'bg-blue-600 hover:bg-blue-700 text-slate-900'
                         }`}
                       >
                         {hasTimer ? '✓' : '⚔️'}
@@ -378,30 +378,30 @@ export function BossTimer() {
 
           {/* RIGHT COLUMN - Active Timers History (1/4 width) */}
           <div className="lg:col-span-1 flex flex-col overflow-hidden">
-            <div className="bg-gradient-to-br from-red-900/40 to-red-800/40 backdrop-blur-sm border border-red-500/30 rounded-2xl p-4 shadow-2xl flex flex-col h-full overflow-hidden">
-              <h2 className="text-lg font-bold mb-3">
+            <div className="bg-gradient-to-br from-red-50 to-red-100 backdrop-blur-sm border border-red-300 rounded-2xl p-4 shadow-2xl flex flex-col h-full overflow-hidden">
+              <h2 className="text-lg font-bold mb-3 text-slate-900">
                 🔥 Next Boss(es) ({timers.length})
               </h2>
 
               {sortedTimers.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">
+                <div className="text-center py-8 text-slate-600">
                   <p className="text-sm">No bosses tracked</p>
                   <p className="text-xs mt-1">Register kills</p>
                 </div>
               ) : (
                 <div className="space-y-2 overflow-y-auto pr-2 flex-1">
                   {sortedTimers.map(({ timer, boss, remaining, status }) => {
-                    let bgClass = 'from-green-900/20 to-green-800/20';
-                    let borderClass = 'border-green-500/30';
+                    let bgClass = 'from-green-50 to-green-100';
+                    let borderClass = 'border-green-300';
                     let badgeClass = 'bg-green-500/20 text-green-300';
 
                     if (status === 'warning') {
-                      bgClass = 'from-yellow-900/20 to-yellow-800/20';
-                      borderClass = 'border-yellow-500/30';
+                      bgClass = 'from-yellow-50 to-yellow-100';
+                      borderClass = 'border-yellow-300';
                       badgeClass = 'bg-yellow-500/20 text-yellow-300';
                     } else if (status === 'respawned') {
-                      bgClass = 'from-red-900/20 to-red-800/20';
-                      borderClass = 'border-red-500/30';
+                      bgClass = 'from-red-50 to-red-100';
+                      borderClass = 'border-red-300';
                       badgeClass = 'bg-red-500/20 text-red-300';
                     }
 
@@ -413,7 +413,7 @@ export function BossTimer() {
                         <div className="flex gap-2">
                           {/* LEFT: Timer and Complete Button */}
                           <div className="flex flex-col items-center gap-1.5 min-w-[95px]">
-                            <div className="bg-black/50 rounded px-2 py-3 w-full">
+                            <div className="bg-slate-100 rounded px-2 py-3 w-full">
                               <div className="text-center text-sm font-mono font-bold tracking-wide">
                                 {formatCountdown(remaining)}
                               </div>
@@ -450,18 +450,18 @@ export function BossTimer() {
                               <h3 className="text-sm font-bold truncate">{timer.bossName}</h3>
                             </div>
 
-                            <div className="space-y-0.5 text-xs text-gray-300">
+                            <div className="space-y-0.5 text-xs text-slate-700">
                               <div className="flex justify-between">
-                                <span className="text-gray-400">Local:</span>
+                                <span className="text-slate-600">Local:</span>
                                 <span className="font-medium">{timer.killTimeLocal}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-gray-400">Server:</span>
+                                <span className="text-slate-600">Server:</span>
                                 <span className="font-medium">{timer.killTimeUTC}</span>
                               </div>
                               {timer.playerName && (
                                 <div className="flex justify-between">
-                                  <span className="text-gray-400">Player:</span>
+                                  <span className="text-slate-600">Player:</span>
                                   <span className="font-medium truncate ml-1">👤 {timer.playerName}</span>
                                 </div>
                               )}
@@ -481,7 +481,7 @@ export function BossTimer() {
       {/* Modal */}
       {showModal && selectedBoss && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+          <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-2xl">
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
               <span className="text-3xl">{selectedBoss.isMVP ? '👑' : '⭐'}</span>
               {selectedBoss.name}
@@ -496,9 +496,9 @@ export function BossTimer() {
                   type="time"
                   value={killTimeInput}
                   onChange={(e) => setKillTimeInput(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition-colors text-white"
+                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors text-slate-900"
                 />
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-slate-600 mt-1">
                   Current server: {formatTimeWithZone(currentTime, true, userTimezoneOffset)}
                 </p>
               </div>
@@ -512,11 +512,11 @@ export function BossTimer() {
                   value={playerName}
                   onChange={(e) => setPlayerName(e.target.value)}
                   placeholder="Who killed the boss?"
-                  className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder-gray-500 text-white"
+                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors placeholder-slate-400 text-slate-900"
                 />
               </div>
 
-              <div className="text-sm text-gray-400 bg-gray-900/30 rounded-lg p-3">
+              <div className="text-sm text-slate-600 bg-gray-900/30 rounded-lg p-3">
                 <p>📍 {selectedBoss.mapLocation || 'Unknown location'}</p>
                 <p>⏱️ Respawn: {selectedBoss.respawnTime} minutes</p>
               </div>
@@ -549,7 +549,7 @@ export function BossTimer() {
               Confirm Removal
             </h2>
 
-            <p className="text-white mb-6">
+            <p className="text-slate-900 mb-6">
               Are you sure you want to remove the timer for{' '}
               <span className="font-bold text-red-400">{timerToRemove.bossName}</span>?
             </p>
