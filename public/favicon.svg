@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a7ba7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a3a5a;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Celtic knot border corners -->
+  <path d="M20,20 Q20,40 40,40 Q20,40 20,60" fill="none" stroke="#c0c0c0" stroke-width="3"/>
+  <path d="M236,20 Q236,40 216,40 Q236,40 236,60" fill="none" stroke="#c0c0c0" stroke-width="3"/>
+  <path d="M20,236 Q20,216 40,216 Q20,216 20,196" fill="none" stroke="#c0c0c0" stroke-width="3"/>
+  <path d="M236,236 Q236,216 216,216 Q236,216 236,196" fill="none" stroke="#c0c0c0" stroke-width="3"/>
+  
+  <!-- Shield -->
+  <path d="M128,40 L180,60 Q190,65 190,80 L190,140 Q190,170 128,210 Q66,170 66,140 L66,80 Q66,65 76,60 Z" fill="url(#shieldGrad)" stroke="#c0c0c0" stroke-width="4"/>
+  
+  <!-- Sword -->
+  <rect x="115" y="70" width="8" height="90" fill="#c0c0c0"/>
+  <polygon points="119,65 111,75 127,75" fill="#e8e8e8"/>
+  <rect x="107" y="160" width="24" height="6" fill="#a0a0a0"/>
+  <circle cx="119" cy="168" r="4" fill="#c0c0c0"/>
+  
+  <!-- Staff -->
+  <rect x="133" y="70" width="8" height="90" fill="#8b7355"/>
+  <circle cx="137" cy="68" r="8" fill="#4a7ba7"/>
+  <path d="M137,68 L142,73 L137,78 L132,73 Z" fill="#e8e8e8"/>
+  <circle cx="137" cy="165" r="5" fill="#6b5345"/>
+  
+  <!-- Celtic knot on shield -->
+  <path d="M128,100 Q118,105 118,115 Q118,105 108,105 Q118,105 118,95 Q118,105 128,100 M128,100 Q138,105 138,115 Q138,105 148,105 Q138,105 138,95 Q138,105 128,100" fill="none" stroke="#c0c0c0" stroke-width="2" opacity="0.6"/>
+</svg>

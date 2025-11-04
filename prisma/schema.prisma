@@ -1,0 +1,326 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/myth_wiki/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// Monster information
+model Monster {
+  id            Int      @id
+  name          String
+  jName         String?
+  sprite        String?
+  level         Int
+  hp            Int
+  baseExp       Int
+  jobExp        Int
+  baseVipExp    Int?
+  jobVipExp     Int?
+  hit           Int?
+  flee          Int?
+  def           Int?
+  mDef          Int?
+  str           Int?
+  agi           Int?
+  vit           Int?
+  int           Int?
+  dex           Int?
+  luk           Int?
+  atk1          Int?
+  atk2          Int?
+  mAtkMin       Int?
+  mAtkMax       Int?
+  sMAtk         Int?
+  speed         Int?
+  range1        Int?
+  range2        Int?
+  range3        Int?
+  atkDelay      Int?
+  aspRate       Int?
+  aspRate2      Int?
+  ai            BigInt?
+  race          String?
+  size          String?
+  element       String?
+  elementLevel  Int?
+  res           Int?
+  mRes          Int?
+  omnibook      Int?
+  monsterType   String?
+  expMvp        Int?
+  
+  // Relationships
+  drops         MonsterDrop[]
+  spawns        MonsterSpawn[]
+  skills        MonsterSkill[]
+  summons       MonsterSummon[]
+  mvpDrops      MvpDrop[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("monsters")
+}
+
+// Item information
+model Item {
+  id                          Int      @id @map("nameid")
+  name                        String
+  ename                       String?
+  weight                      Int?
+  type                        Int?
+  subtype                     Int?
+  
+  // Equipment stats
+  atk                         Int?
+  def                         Int?
+  matk                        Int?
+  slots                       Int?
+  weaponLevel                 Int?
+  armorLevel                  Int?
+  equipLocation               Int?     @map("equip")
+  
+  // Level requirements
+  elv                         Int?
+  elvmax                      Int?
+  
+  // Values
+  valueBuy                    Int?     @map("value_buy")
+  valueSell                   Int?     @map("value_sell")
+  
+  // Flags
+  flagAvailable               Int?     @map("flag_available")
+  flagAutoequip               Int?     @map("flag_autoequip")
+  flagBindOnEquip             Int?     @map("flag_bindOnEquip")
+  flagBroadcast               Int?     @map("flag_broadcast")
+  flagBuyingstore             Int?     @map("flag_buyingstore")
+  flagDeadBranch              Int?     @map("flag_dead_branch")
+  flagDelayConsume            Int?     @map("flag_delay_consume")
+  flagDropEffect              Int?     @map("flag_dropEffect")
+  flagGroup                   Int?     @map("flag_group")
+  flagNoEquip                 Int?     @map("flag_no_equip")
+  flagNoRefine                Int?     @map("flag_no_refine")
+  
+  // Restrictions
+  restrictionAuction          Int?     @map("restriction_auction")
+  restrictionCart             Int?     @map("restriction_cart")
+  restrictionDrop             Int?     @map("restriction_drop")
+  restrictionGuildStorage     Int?     @map("restriction_guild_storage")
+  restrictionMail             Int?     @map("restriction_mail")
+  restrictionSell             Int?     @map("restriction_sell")
+  restrictionStorage          Int?     @map("restriction_storage")
+  restrictionTrade            Int?     @map("restriction_trade")
+  restrictionTradePartner     Int?     @map("restriction_trade_partner")
+  
+  // Other properties
+  classBase1                  BigInt?  @map("class_base1")
+  classBase2                  BigInt?  @map("class_base2")
+  classBase3                  BigInt?  @map("class_base3")
+  delayDuration               Int?     @map("delay_duration")
+  delaySc                     Int?     @map("delay_sc")
+  look                        Int?
+  maxchance                   Int?
+  viewId                      Int?     @map("view_id")
+  omnibook                    Int?
+  
+  // Relationships
+  droppedBy                   MonsterDrop[]
+  mvpDroppedBy                MvpDrop[]
+  description                 ItemDescription?
+  usedInCrafts                CraftMaterial[]        @relation("CraftMaterials")
+  usedInClassServices         ClassServiceMaterial[] @relation("ClassServiceMaterials")
+  starClusterInfo             StarCluster[]          @relation("StarClusterMaterials")
+  
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  @@map("items")
+}
+
+// Monster drops relationship
+model MonsterDrop {
+  id        String   @id @default(cuid())
+  monsterId Int
+  itemId    Int
+  rate      Float
+  
+  // Additional drop info
+  slots     Int?
+  equipLoc  Int?     @map("equip")
+  type      Int?
+  
+  // Relationships
+  monster   Monster  @relation(fields: [monsterId], references: [id], onDelete: Cascade)
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  @@unique([monsterId, itemId])
+  @@map("monster_drops")
+}
+
+// MVP drops
+model MvpDrop {
+  id        String   @id @default(cuid())
+  monsterId Int
+  itemId    Int?
+  
+  // Relationships
+  monster   Monster  @relation(fields: [monsterId], references: [id], onDelete: Cascade)
+  item      Item?    @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  
+  @@unique([monsterId, itemId])
+  @@map("mvp_drops")
+}
+
+// Monster spawn locations
+model MonsterSpawn {
+  id        String   @id @default(cuid())
+  monsterId Int
+  mapId     Int?
+  mapName   String?
+  qty       Int?
+  
+  // Relationships
+  monster   Monster  @relation(fields: [monsterId], references: [id], onDelete: Cascade)
+  
+  @@map("monster_spawns")
+}
+
+// Monster skills
+model MonsterSkill {
+  id        String   @id @default(cuid())
+  monsterId Int
+  skillId   Int?
+  skillName String?
+  skillLvl  Int?
+  
+  // Relationships
+  monster   Monster  @relation(fields: [monsterId], references: [id], onDelete: Cascade)
+  
+  @@map("monster_skills")
+}
+
+// Monster summons
+model MonsterSummon {
+  id        String   @id @default(cuid())
+  monsterId Int
+  mobId     Int?
+  
+  // Relationships
+  monster   Monster  @relation(fields: [monsterId], references: [id], onDelete: Cascade)
+  
+  @@map("monster_summons")
+}
+
+// Extended item descriptions from Lua file
+model ItemDescription {
+  id                            String   @id @default(cuid())
+  itemId                        Int      @unique
+  unidentifiedDisplayName       String?
+  unidentifiedResourceName      String?
+  unidentifiedDescription       String[]
+  identifiedDisplayName         String?
+  identifiedResourceName        String?
+  identifiedDescription         String[]
+  slotCount                     Int?
+  classNum                      Int?
+  costume                       Boolean?
+  
+  // Relationships
+  item                          Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  @@map("item_descriptions")
+}
+
+// Crafts (Headgear, Reforge, Other items)
+model Craft {
+  id          Int      @id @default(autoincrement())
+  name        String
+  type        String   // "Headgear", "Reforge", "Other"
+  location    String?
+  npc         String?
+  position    String?  // For headgear: "Upper", "Middle", "Lower"
+  effects     String?
+  notes       String?
+  cost        Int?     // Zeny cost
+  
+  materials   CraftMaterial[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([type])
+  @@index([name])
+  @@map("crafts")
+}
+
+model CraftMaterial {
+  id        Int    @id @default(autoincrement())
+  craftId   Int
+  itemId    Int?
+  itemName  String // Name as it appears in the Excel
+  quantity  Int
+  
+  craft     Craft  @relation(fields: [craftId], references: [id], onDelete: Cascade)
+  item      Item?  @relation(name: "CraftMaterials", fields: [itemId], references: [id])
+  
+  @@index([craftId])
+  @@index([itemId])
+  @@map("craft_materials")
+}
+
+// Class-specific services/items
+model ClassService {
+  id        Int      @id @default(autoincrement())
+  name      String
+  jobClass  String
+  effect    String?
+  notes     String?
+  
+  materials ClassServiceMaterial[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([jobClass])
+  @@index([name])
+  @@map("class_services")
+}
+
+model ClassServiceMaterial {
+  id              Int    @id @default(autoincrement())
+  classServiceId  Int
+  itemId          Int?
+  itemName        String
+  quantity        Int
+  
+  classService    ClassService @relation(fields: [classServiceId], references: [id], onDelete: Cascade)
+  item            Item?        @relation(name: "ClassServiceMaterials", fields: [itemId], references: [id])
+  
+  @@index([classServiceId])
+  @@index([itemId])
+  @@map("class_service_materials")
+}
+
+// Star Cluster extraction data
+model StarCluster {
+  id              Int     @id @default(autoincrement())
+  materialId      Int?
+  materialName    String
+  starClusters    Float?
+  extractionCost  Int?
+  npcBuyPrice     Int?
+  zenyPerCluster  Float?
+  
+  material        Item?   @relation(name: "StarClusterMaterials", fields: [materialId], references: [id])
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([materialId])
+  @@map("star_clusters")
+}
