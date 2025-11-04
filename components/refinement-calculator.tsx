@@ -1,274 +1,417 @@
 
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Badge } from '@/components/ui/badge';
-import { Calculator, Info } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
-type EquipmentLevel = '1' | '2' | '3' | '4';
-type RefinementType = 'normal' | 'enriched' | 'hd';
-
-interface RefinementRates {
-  [key: string]: number;
-}
-
-const normalRates: Record<EquipmentLevel, RefinementRates> = {
-  '1': { '0-7': 100, '8': 60, '9': 40, '10': 19, '11-20': 9 },
-  '2': { '0-6': 100, '7': 60, '8': 40, '9': 20, '10': 10, '11-20': 5 },
-  '3': { '0-5': 100, '6': 60, '7': 50, '8': 20, '9': 20, '10': 9, '11-20': 5 },
-  '4': { '0-4': 100, '5': 60, '6': 40, '7': 40, '8': 20, '9': 20, '10': 10, '11-20': 5 }
-};
-
-const enrichedRates: Record<EquipmentLevel, RefinementRates> = {
-  '1': { '0-7': 100, '8': 90, '9': 70, '10': 30, '11-20': 15 },
-  '2': { '0-6': 100, '7': 90, '8': 70, '9': 40, '10': 20, '11-20': 10 },
-  '3': { '0-5': 100, '6': 90, '7': 80, '8': 40, '9': 40, '10': 15, '11-20': 10 },
-  '4': { '0-4': 100, '5': 90, '6': 70, '7': 70, '8': 40, '9': 40, '10': 20, '11-20': 10 }
-};
-
-const hdRates: Record<EquipmentLevel, RefinementRates> = {
-  '1': { '0-10': 100, '11-20': 50 },
-  '2': { '0-10': 100, '11-20': 50 },
-  '3': { '0-10': 100, '11-20': 50 },
-  '4': { '0-10': 100, '11-20': 50 }
-};
-
-function getSuccessRate(currentRefine: number, equipLevel: EquipmentLevel, refineType: RefinementType): number {
-  const rates = refineType === 'normal' ? normalRates : refineType === 'enriched' ? enrichedRates : hdRates;
-  const levelRates = rates[equipLevel];
-
-  for (const [range, rate] of Object.entries(levelRates)) {
-    if (range.includes('-')) {
-      const [min, max] = range.split('-').map(Number);
-      if (currentRefine >= min && currentRefine <= max) return rate;
-    } else if (currentRefine === Number(range)) {
-      return rate;
-    }
-  }
-  return 0;
-}
+import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import type { ItemType, RefineLevel, RefineInput, MonteCarloResults, RefineAttemptResult } from '@/lib/refine-types';
+import {
+  getRefineOptions,
+  getValidTargets,
+  formatRefineLevel,
+  getRefineColor,
+} from '@/lib/refine-data';
+import {
+  getAllStepProbabilities,
+  runMonteCarloSimulation,
+  simulateSingleAttempt,
+} from '@/lib/refine-calculator';
 
 export function RefinementCalculator() {
-  const [equipLevel, setEquipLevel] = useState<EquipmentLevel>('4');
-  const [currentRefine, setCurrentRefine] = useState(0);
-  const [targetRefine, setTargetRefine] = useState(10);
-  const [refineType, setRefineType] = useState<RefinementType>('normal');
-  const [materialCost, setMaterialCost] = useState(0);
-  const [equipmentCost, setEquipmentCost] = useState(0);
+  // Form inputs
+  const [itemType, setItemType] = useState<ItemType>('weapon');
+  const [currentRefine, setCurrentRefine] = useState<RefineLevel>(4);
+  const [targetRefine, setTargetRefine] = useState<RefineLevel>(7);
+  const [currentDurability, setCurrentDurability] = useState<number>(3);
 
-  const calculateRefinement = () => {
-    let totalCost = 0;
-    let totalAttempts = 0;
-    let equipmentsNeeded = 1;
+  // Calculation results
+  const [monteCarloResults, setMonteCarloResults] = useState<MonteCarloResults | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
 
-    for (let refine = currentRefine; refine < targetRefine; refine++) {
-      const successRate = getSuccessRate(refine, equipLevel, refineType);
-      const attemptsNeeded = 100 / successRate;
+  // Interactive simulator state
+  const [simRefine, setSimRefine] = useState<RefineLevel>(currentRefine);
+  const [simDurability, setSimDurability] = useState<number>(currentDurability);
+  const [simHistory, setSimHistory] = useState<RefineAttemptResult[]>([]);
+  const [simDestroyed, setSimDestroyed] = useState(false);
 
-      totalAttempts += attemptsNeeded;
-      totalCost += attemptsNeeded * materialCost;
+  // Get valid target options based on current refine
+  const validTargets = useMemo(() => getValidTargets(currentRefine), [currentRefine]);
 
-      // If refinement type breaks on fail and success rate < 100%
-      if ((refineType === 'normal' && successRate < 100) || 
-          (refineType === 'enriched' && successRate < 100 && refine >= 5)) {
-        const failureRate = 1 - (successRate / 100);
-        equipmentsNeeded += (attemptsNeeded - 1) * failureRate;
-      }
+  // Ensure target is valid
+  useEffect(() => {
+    if (targetRefine <= currentRefine) {
+      const newTarget = Math.min(currentRefine + 1, 12) as RefineLevel;
+      setTargetRefine(newTarget);
+    }
+  }, [currentRefine, targetRefine]);
+
+  // Calculate probabilities when inputs change
+  useEffect(() => {
+    if (currentRefine >= targetRefine) return;
+
+    setIsCalculating(true);
+    setTimeout(() => {
+      const input: RefineInput = {
+        itemType,
+        currentRefine,
+        targetRefine,
+        currentDurability,
+      };
+
+      const results = runMonteCarloSimulation(input, 100000);
+      setMonteCarloResults(results);
+      setIsCalculating(false);
+    }, 100);
+  }, [itemType, currentRefine, targetRefine, currentDurability]);
+
+  // Reset simulator when inputs change
+  useEffect(() => {
+    setSimRefine(currentRefine);
+    setSimDurability(currentDurability);
+    setSimHistory([]);
+    setSimDestroyed(false);
+  }, [currentRefine, currentDurability]);
+
+  // Get step probabilities
+  const stepProbabilities = useMemo(
+    () => getAllStepProbabilities(itemType, currentRefine, targetRefine),
+    [itemType, currentRefine, targetRefine]
+  );
+
+  // Handle interactive simulation
+  const handleSimulateAttempt = () => {
+    if (simDestroyed) return;
+    if (simRefine >= targetRefine) {
+      alert('Already reached target refine!');
+      return;
     }
 
-    const totalEquipmentCost = Math.ceil(equipmentsNeeded) * equipmentCost;
+    const result = simulateSingleAttempt(itemType, simRefine, simDurability);
+    setSimHistory(prev => [result, ...prev].slice(0, 10));
+    setSimRefine(result.newRefine);
+    setSimDurability(result.newDurability);
 
-    return {
-      totalAttempts: Math.ceil(totalAttempts),
-      totalMaterialCost: Math.ceil(totalCost),
-      equipmentsNeeded: Math.ceil(equipmentsNeeded),
-      totalEquipmentCost,
-      grandTotal: Math.ceil(totalCost) + totalEquipmentCost
-    };
+    if (result.itemDestroyed) {
+      setSimDestroyed(true);
+    }
   };
 
-  const result = calculateRefinement();
-  const successRate = getSuccessRate(currentRefine, equipLevel, refineType);
+  const handleResetSimulator = () => {
+    setSimRefine(currentRefine);
+    setSimDurability(currentDurability);
+    setSimHistory([]);
+    setSimDestroyed(false);
+  };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Calculator className="h-6 w-6 text-primary" />
-            <CardTitle>Refinement Calculator</CardTitle>
+    <div className="min-h-screen max-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white overflow-hidden">
+      <div className="max-w-7xl mx-auto h-screen flex flex-col p-3">
+        {/* Input Section */}
+        <div className="bg-gradient-to-br from-gray-800/60 to-gray-700/60 backdrop-blur-sm border border-purple-500/30 rounded-xl p-4 mb-3">
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-2xl font-bold">🎲 Refinement Probability</h2>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/tools/refinement">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Link>
+            </Button>
           </div>
-          <CardDescription>
-            Calculate the cost and success rate for refining your equipment
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Equipment Level */}
-          <div className="space-y-2">
-            <Label htmlFor="equip-level">Equipment Level</Label>
-            <Select value={equipLevel} onValueChange={(value) => setEquipLevel(value as EquipmentLevel)}>
-              <SelectTrigger id="equip-level">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">Level 1</SelectItem>
-                <SelectItem value="2">Level 2</SelectItem>
-                <SelectItem value="3">Level 3</SelectItem>
-                <SelectItem value="4">Level 4</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Refinement Type */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label htmlFor="refine-type">Refinement Type</Label>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Info className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <p className="text-sm">
-                      <strong>Normal:</strong> Breaks on failure<br />
-                      <strong>Enriched:</strong> Safer refining, doesn't break from +5 to +9<br />
-                      <strong>HD:</strong> Never breaks, downgrades by 1 on failure
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            <Select value={refineType} onValueChange={(value) => setRefineType(value as RefinementType)}>
-              <SelectTrigger id="refine-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="normal">Normal (Breaks on Fail)</SelectItem>
-                <SelectItem value="enriched">Enriched (Safe +5 to +9)</SelectItem>
-                <SelectItem value="hd">HD (Never Breaks)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Current Refine */}
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <Label>Current Refine</Label>
-              <Badge variant="outline">+{currentRefine}</Badge>
-            </div>
-            <Slider
-              value={[currentRefine]}
-              onValueChange={(value) => setCurrentRefine(value[0])}
-              max={20}
-              min={0}
-              step={1}
-              className="w-full"
-            />
-          </div>
-
-          {/* Target Refine */}
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <Label>Target Refine</Label>
-              <Badge variant="outline">+{targetRefine}</Badge>
-            </div>
-            <Slider
-              value={[targetRefine]}
-              onValueChange={(value) => setTargetRefine(value[0])}
-              max={20}
-              min={currentRefine + 1}
-              step={1}
-              className="w-full"
-            />
-          </div>
-
-          {/* Material Cost */}
-          <div className="space-y-2">
-            <Label htmlFor="material-cost">Material Cost per Attempt (Zeny)</Label>
-            <Input
-              id="material-cost"
-              type="number"
-              value={materialCost}
-              onChange={(e) => setMaterialCost(Number(e.target.value))}
-              placeholder="e.g., 10000"
-            />
-          </div>
-
-          {/* Equipment Cost */}
-          <div className="space-y-2">
-            <Label htmlFor="equipment-cost">Equipment Base Cost (Zeny)</Label>
-            <Input
-              id="equipment-cost"
-              type="number"
-              value={equipmentCost}
-              onChange={(e) => setEquipmentCost(Number(e.target.value))}
-              placeholder="e.g., 1000000"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Results */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Refinement Analysis</CardTitle>
-          <CardDescription>
-            Estimated costs and attempts from +{currentRefine} to +{targetRefine}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-muted rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Current Success Rate</div>
-              <div className="text-2xl font-bold">{successRate}%</div>
+          <p className="text-gray-400 text-sm mb-3">
+            Calculate real chances of refining your equipment considering durability and probabilities
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            {/* Item Type */}
+            <div>
+              <label className="block text-xs font-medium mb-1">Item Type</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setItemType('weapon')}
+                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
+                    itemType === 'weapon'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
+                  }`}
+                >
+                  ⚔️ Weapon
+                </button>
+                <button
+                  onClick={() => setItemType('armor')}
+                  className={`flex-1 px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
+                    itemType === 'armor'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
+                  }`}
+                >
+                  🛡️ Armor
+                </button>
+              </div>
             </div>
 
-            <div className="p-4 bg-muted rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Total Attempts Needed</div>
-              <div className="text-2xl font-bold">{result.totalAttempts.toLocaleString()}</div>
+            {/* Current Durability */}
+            <div>
+              <label className="block text-xs font-medium mb-1">Current Durability</label>
+              <input
+                type="number"
+                min="0"
+                value={currentDurability}
+                onChange={(e) => setCurrentDurability(Math.max(0, parseInt(e.target.value) || 0))}
+                className="w-full px-3 py-2 text-sm bg-gray-900/50 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+              />
             </div>
 
-            <div className="p-4 bg-muted rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Material Cost</div>
-              <div className="text-2xl font-bold">{result.totalMaterialCost.toLocaleString()}z</div>
+            {/* Current Refine */}
+            <div>
+              <label className="block text-xs font-medium mb-1">Current Refine</label>
+              <select
+                value={currentRefine}
+                onChange={(e) => setCurrentRefine(parseInt(e.target.value) as RefineLevel)}
+                className="w-full px-3 py-2 text-sm bg-gray-900/50 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+              >
+                {getRefineOptions()
+                  .filter(level => level < 12)
+                  .map(level => (
+                    <option key={level} value={level}>
+                      {formatRefineLevel(level)}
+                    </option>
+                  ))}
+              </select>
             </div>
 
-            <div className="p-4 bg-muted rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Equipments Needed</div>
-              <div className="text-2xl font-bold">{result.equipmentsNeeded.toLocaleString()}</div>
+            {/* Target Refine */}
+            <div>
+              <label className="block text-xs font-medium mb-1">Target Refine</label>
+              <select
+                value={targetRefine}
+                onChange={(e) => setTargetRefine(parseInt(e.target.value) as RefineLevel)}
+                className="w-full px-3 py-2 text-sm bg-gray-900/50 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+              >
+                {validTargets.map(level => (
+                  <option key={level} value={level}>
+                    {formatRefineLevel(level)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Statistics Cards */}
+        {monteCarloResults && !isCalculating && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+            {/* Success Rate */}
+            <div className="bg-gradient-to-br from-green-900/40 to-green-800/40 border border-green-500/30 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Success Rate</div>
+              <div className="text-2xl font-bold text-green-400">
+                {(targetRefine === currentRefine + 1 && currentDurability === 0)
+                  ? (stepProbabilities[0]?.successRate * 100).toFixed(2)
+                  : (monteCarloResults.successRate * 100).toFixed(2)}%
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {(targetRefine === currentRefine + 1 && currentDurability === 0)
+                  ? 'Exact value (dur=0)'
+                  : `${monteCarloResults.successCount.toLocaleString()} / ${monteCarloResults.totalSimulations.toLocaleString()} successes`}
+              </div>
             </div>
 
-            <div className="p-4 bg-muted rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Equipment Cost</div>
-              <div className="text-2xl font-bold">{result.totalEquipmentCost.toLocaleString()}z</div>
+            {/* Average Attempts */}
+            <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/40 border border-blue-500/30 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Average Attempts</div>
+              <div className="text-2xl font-bold text-blue-400">
+                {monteCarloResults.averageAttemptsOnSuccess > 0
+                  ? monteCarloResults.averageAttemptsOnSuccess.toFixed(1)
+                  : '∞'}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {monteCarloResults.successCount > 0 ? 'Until success' : 'No success'}
+              </div>
             </div>
 
-            <div className="p-4 bg-primary/10 rounded-lg border-2 border-primary">
-              <div className="text-sm text-primary mb-1">Grand Total Cost</div>
-              <div className="text-2xl font-bold text-primary">{result.grandTotal.toLocaleString()}z</div>
+            {/* Failure Rate */}
+            <div className="bg-gradient-to-br from-red-900/40 to-red-800/40 border border-red-500/30 rounded-lg p-3">
+              <div className="text-xs text-gray-400 mb-1">Failure Rate</div>
+              <div className="text-2xl font-bold text-red-400">
+                {((1 - monteCarloResults.successRate) * 100).toFixed(2)}%
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {monteCarloResults.failureCount.toLocaleString()} failures
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error Margin Info */}
+        {monteCarloResults && !isCalculating && !(targetRefine === currentRefine + 1 && currentDurability === 0) && (
+          <div className="mb-3 px-3 py-2 bg-blue-900/20 border border-blue-500/30 rounded-lg text-xs text-blue-300">
+            <span className="font-bold">ℹ️ Margin of Error:</span> Monte Carlo with 100,000 iterations. Margin: ±0.15%.
+          </div>
+        )}
+
+        {isCalculating && (
+          <div className="text-center py-4">
+            <div className="animate-spin inline-block w-6 h-6 border-4 border-purple-500 border-t-transparent rounded-full mb-2"></div>
+            <p className="text-gray-400 text-sm">Calculating...</p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+          {/* Probability Table */}
+          <div className="bg-gradient-to-br from-gray-800/60 to-gray-700/60 backdrop-blur-sm border border-purple-500/30 rounded-xl p-4 flex flex-col min-h-0">
+            <h2 className="text-lg font-bold mb-3">📊 Probability Table</h2>
+            <div className="overflow-x-auto overflow-y-auto flex-1">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-gray-700">
+                    <th className="text-left py-1 px-2">Level</th>
+                    <th className="text-right py-1 px-2">Success</th>
+                    <th className="text-right py-1 px-2">Failure</th>
+                    <th className="text-center py-1 px-2">Loses Dur.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stepProbabilities.map((step, idx) => (
+                    <tr key={idx} className="border-b border-gray-800/50">
+                      <td className="py-1 px-2">
+                        <span className={getRefineColor(step.from)}>{formatRefineLevel(step.from)}</span>
+                        {' → '}
+                        <span className={getRefineColor(step.to)}>{formatRefineLevel(step.to)}</span>
+                      </td>
+                      <td className="text-right py-1 px-2 text-green-400">
+                        {(step.successRate * 100).toFixed(1)}%
+                      </td>
+                      <td className="text-right py-1 px-2 text-red-400">
+                        {(step.failureRate * 100).toFixed(1)}%
+                      </td>
+                      <td className="text-center py-1 px-2">
+                        {step.losesDurabilityOnFail ? (
+                          <span className="text-red-400">✓</span>
+                        ) : (
+                          <span className="text-green-400">✗</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <div className="mt-4 p-4 bg-muted/50 rounded-md text-sm text-muted-foreground">
-            <strong className="text-foreground">📊 Note:</strong> These are statistical averages. Actual results may vary due to RNG.
-            {refineType === 'normal' && (
-              <span> Normal refinement will break your equipment on failure at higher refines.</span>
-            )}
-            {refineType === 'enriched' && (
-              <span> Enriched refinement is safer and doesn't break equipment from +5 to +9.</span>
-            )}
-            {refineType === 'hd' && (
-              <span> HD refinement never breaks equipment, but downgrades by 1 level on failure.</span>
-            )}
+          {/* Interactive Simulator */}
+          <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/40 backdrop-blur-sm border border-orange-500/30 rounded-xl p-4 flex flex-col min-h-0">
+            <h2 className="text-lg font-bold mb-3">🎮 Interactive Simulator</h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 flex-1 min-h-0">
+              {/* Left Column - Current State & Controls */}
+              <div className="flex flex-col space-y-2 min-h-0">
+                {/* Current State */}
+                <div className="bg-black/30 rounded-lg p-3 space-y-2">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="text-xs text-gray-400 mb-1">Current Refine</div>
+                      <div className={`text-3xl font-bold ${getRefineColor(simRefine)}`}>
+                        {formatRefineLevel(simRefine)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-400 mb-1">Durability</div>
+                      <div className={`text-3xl font-bold ${simDurability === 0 ? 'text-red-400' : 'text-blue-400'}`}>
+                        {simDurability}
+                      </div>
+                    </div>
+                  </div>
+
+                  {simRefine < 12 && !simDestroyed && (
+                    <div className="pt-2 border-t border-gray-700">
+                      <div className="text-xs text-gray-400 mb-1">
+                        Chance {formatRefineLevel(simRefine)} → {formatRefineLevel((simRefine + 1) as RefineLevel)}
+                      </div>
+                      <div className="text-xl font-bold text-yellow-400">
+                        {((stepProbabilities.find(s => s.from === simRefine)?.successRate ?? 0) * 100).toFixed(1)}%
+                      </div>
+                    </div>
+                  )}
+
+                  {simDurability === 0 && !simDestroyed && simRefine < targetRefine && (
+                    <div className="px-2 py-1 bg-yellow-600/20 border border-yellow-500/50 rounded text-yellow-400 text-center font-bold text-xs">
+                      ⚠️ DANGER: Next failure = Item breaks!
+                    </div>
+                  )}
+
+                  {simDestroyed && (
+                    <div className="px-2 py-1 bg-red-600/20 border border-red-500/50 rounded text-red-400 text-center font-bold text-xs">
+                      💥 ITEM DESTROYED!
+                    </div>
+                  )}
+
+                  {simRefine >= targetRefine && !simDestroyed && (
+                    <div className="px-2 py-1 bg-green-600/20 border border-green-500/50 rounded text-green-400 text-center font-bold text-xs">
+                      ✓ TARGET REACHED!
+                    </div>
+                  )}
+                </div>
+
+                {/* Control Buttons */}
+                <div className="space-y-2">
+                  <button
+                    onClick={handleSimulateAttempt}
+                    disabled={simDestroyed || simRefine >= targetRefine}
+                    className="w-full px-3 py-2 text-sm bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed rounded-lg font-bold transition-colors"
+                  >
+                    🎲 Try Refining
+                  </button>
+                  <button
+                    onClick={handleResetSimulator}
+                    className="w-full px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg font-bold transition-colors"
+                  >
+                    ↻ Reset
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column - History */}
+              <div className="bg-black/30 rounded-lg p-3 flex flex-col min-h-0">
+                <div className="text-xs font-bold text-gray-300 mb-2">📜 Attempt History</div>
+                <div className="space-y-1 overflow-y-auto pr-2 flex-1">
+                  {simHistory.length === 0 ? (
+                    <div className="text-center text-gray-500 text-xs py-4">
+                      No attempts yet
+                    </div>
+                  ) : (
+                    simHistory.map((attempt, idx) => (
+                      <div
+                        key={idx}
+                        className={`px-2 py-1 rounded text-xs ${
+                          attempt.itemDestroyed
+                            ? 'bg-red-900/30 border border-red-500/30 text-red-400'
+                            : attempt.success
+                            ? 'bg-green-900/30 border border-green-500/30 text-green-400'
+                            : 'bg-gray-800/50 border border-gray-700/50 text-gray-400'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-xs text-gray-500">#{simHistory.length - idx}</span>
+                          <span>
+                            {attempt.itemDestroyed ? (
+                              <span>💥 Item destroyed</span>
+                            ) : attempt.success ? (
+                              <span>✓ {formatRefineLevel(attempt.newRefine)}</span>
+                            ) : (
+                              <span>
+                                ✗ Failed (Dur: {attempt.newDurability})
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
